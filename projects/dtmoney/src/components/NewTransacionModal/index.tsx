@@ -17,7 +17,7 @@ export function NewTransactionModal({
 }: NewTransactionModalProps) {
   const [type, setType] = useState<string>("deposit");
   const [title, setTitle] = useState<string>("");
-  const [value, setValue] = useState<number>(0);
+  const [amount, setAmount] = useState<number>(0);
   const [category, setCategory] = useState<string>("");
 
   const handleCreateNewTransaction = async (e: FormEvent) => {
@@ -25,7 +25,7 @@ export function NewTransactionModal({
 
     const data = {
       title,
-      value,
+      amount,
       category,
     };
 
@@ -58,8 +58,8 @@ export function NewTransactionModal({
         <input
           type="Number"
           placeholder="Valor"
-          onChange={(e) => setValue(Number(e.target.value))}
-          value={value}
+          onChange={(e) => setAmount(Number(e.target.value))}
+          value={amount}
         />
 
         <TransactionTypeContainer>
