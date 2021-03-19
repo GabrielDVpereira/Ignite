@@ -20,22 +20,22 @@ interface Transaction {
   createdAt: Date;
 }
 
-interface TransactionsInfo {
+type TransactionInput = Omit<Transaction, "id" | "createdAt">;
+
+interface TransactionsContextData {
   transactions: Transaction[];
   income: number;
   outcome: number;
   total: number;
+  createTransaction: (transaction: TransactionInput) => Promise<void>;
 }
 interface AxiosTransactionsResponse {
   transactions: Transaction[];
 }
 
-export const TransactionsContext = createContext<TransactionsInfo>({
-  transactions: [],
-  income: 0,
-  outcome: 0,
-  total: 0,
-});
+export const TransactionsContext = createContext<TransactionsContextData>(
+  {} as TransactionsContextData
+);
 
 export function TransactionContextProviver({ children }: Props) {
   const [transactions, setTransactions] = useState<Transaction[]>([]);
@@ -46,6 +46,11 @@ export function TransactionContextProviver({ children }: Props) {
   useEffect(() => {
     getTransactions();
   }, []);
+
+  const createTransaction = async (transaction: TransactionInput) => {
+    await api.post("/transactions", { ...transaction, createdAt: new Date() });
+    getTransactions();
+  };
 
   const getTransactions = async () => {
     const respose = await api.get<AxiosTransactionsResponse>("/transactions");
@@ -79,6 +84,7 @@ export function TransactionContextProviver({ children }: Props) {
         income,
         outcome,
         total,
+        createTransaction,
       }}
     >
       {children}

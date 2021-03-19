@@ -28,7 +28,7 @@ export function Summary() {
           <p>Saídas</p>
           <img src={outcomeImg} alt="entradas" />
         </header>
-        <strong>{formatAmount(outcome)}</strong>
+        <strong>-{formatAmount(outcome)}</strong>
       </div>
       <div className="highlight-backgroud">
         <header>
