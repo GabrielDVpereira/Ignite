@@ -5,7 +5,7 @@ import { createServer, Model } from "miragejs";
 import { useState } from "react";
 import { NewTransactionModal } from "./components/NewTransacionModal";
 import Modal from "react-modal";
-import { TransactionContextProviver } from "./TransactionsContext";
+import { TransactionContextProviver } from "./hooks/useTransactions";
 
 Modal.setAppElement("#root");
 
