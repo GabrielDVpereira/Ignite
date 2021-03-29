@@ -1,3 +1,5 @@
+// This is the service that uses stripe sdk for the backend called stripe
+
 import Stripe from "stripe";
 import { version } from "../../package.json";
 
