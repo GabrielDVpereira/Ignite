@@ -15,14 +15,20 @@ export default NextAuth({
     async signIn(user, account, profile) {
       const { email } = user;
       try {
-        console.log(process.env.FAUNA_DEV_KEY);
-        console.log(process.env.NODE_ENV);
-        await fauna.query(q.Create(q.Collection("users"), { data: { email } }));
+        await fauna.query(
+          q.If(
+            q.Not(
+              q.Exists(q.Match(q.Index("users_by_email"), q.Casefold(email)))
+            ),
+            q.Create(q.Collection("users"), { data: { email } }),
+            q.Get(q.Match(q.Index("users_by_email"), q.Casefold(email)))
+          )
+        );
+        return true;
       } catch (err) {
         console.log(err);
+        return false;
       }
-
-      return true;
     },
   },
 });

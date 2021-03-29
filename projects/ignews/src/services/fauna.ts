@@ -1,3 +1,7 @@
+/**
+ * For local setup: https://dev.to/englishcraig/how-to-set-up-faunadb-for-local-development-5ha7
+ *
+ */
 import { Client } from "faunadb";
 import { faunaConfig, faunaDevConfig } from "../config";
 
