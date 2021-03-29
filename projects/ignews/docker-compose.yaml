@@ -1,0 +1,22 @@
+version: "3"
+services:
+  web:
+    build: .
+    depends_on:
+      - database
+    environment:
+      NODE_ENV: development
+    ports:
+      - "3000:3000"
+    volumes:
+      - .:/app/
+      - /app/node_modules
+
+  database:
+    image: fauna/faunadb
+    ports:
+      - "8443:8443"
+      - "8084:8084"
+    volumes:
+      - ./faunadb:/var/lib/faunadb
+      - ./faunadb:/var/log/faunadb
