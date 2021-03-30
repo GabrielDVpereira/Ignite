@@ -6,24 +6,58 @@ export async function saveSubscription(
   subscriptionId: string,
   customerId: string
 ) {
-  // retrieve the customer by its stripe_id saved in the faunaDB
-  const userRef = await fauna.query(
+  const subscriptionData = await getSubscriptionData(
+    subscriptionId,
+    customerId
+  );
+
+  await fauna.query(
+    q.Create(q.Collection("subscriptions"), { data: subscriptionData })
+  );
+}
+
+export async function updateSubscription(
+  subscriptionId: string,
+  customerId: string
+) {
+  const subscriptionData = await getSubscriptionData(
+    subscriptionId,
+    customerId
+  );
+
+  await fauna.query(
+    q.Replace(
+      q.Select(
+        "ref",
+        q.Get(q.Match(q.Index("subscription_by_id"), subscriptionId))
+      ),
+      { data: subscriptionData }
+    )
+  );
+}
+
+async function getUserById(customerId: string) {
+  return fauna.query(
     q.Select(
       "ref",
       q.Get(q.Match(q.Index("user_by_stripe_customer_id"), customerId))
     )
   );
+}
 
-  const subscription = await stripe.subscriptions.retrieve(subscriptionId);
-
-  const subscriptionData = {
-    id: subscription.id,
-    userId: userRef,
-    status: subscription.status,
-    price_id: subscription.items.data[0].price.id,
-  };
-
-  await fauna.query(
-    q.Create(q.Collection("subscriptions"), { data: subscriptionData })
-  );
+async function getSubscriptionData(subscriptionId, customerId) {
+  try {
+    const userRef = await getUserById(customerId);
+    const subscription = await stripe.subscriptions.retrieve(subscriptionId);
+    return {
+      id: subscription.id,
+      userId: userRef,
+      status: subscription.status,
+      price_id: subscription.items.data[0].price.id,
+    };
+  } catch (err) {
+    throw new Error(
+      `Error on retrieving subscription data ${err.messsage || err}`
+    );
+  }
 }

@@ -2,7 +2,10 @@ import { NextApiRequest, NextApiResponse } from "next";
 import { Readable } from "stream";
 import { Stripe } from "stripe";
 import { stripe } from "../../services/stripe";
-import { saveSubscription } from "./_lib/manageSubscription";
+import {
+  saveSubscription,
+  updateSubscription,
+} from "./_lib/manageSubscription";
 
 async function buffer(readable: Readable) {
   const chunks = [];
@@ -21,7 +24,12 @@ export const config = {
   },
 };
 
-const relevantEvents = new Set(["checkout.session.completed"]);
+const relevantEvents = new Set([
+  "checkout.session.completed",
+  "customer.subscription.created",
+  "customer.subscription.updated",
+  "customer.subscription.deleted",
+]);
 
 export default async function (req: NextApiRequest, res: NextApiResponse) {
   if (req.method === "POST") {
@@ -44,19 +52,27 @@ export default async function (req: NextApiRequest, res: NextApiResponse) {
     }
 
     const { type } = event;
-
     if (relevantEvents.has(type)) {
       try {
+        const subscription = event.data.object as Stripe.Subscription;
         switch (type) {
+          case "customer.subscription.deleted":
+          case "customer.subscription.updated":
+            await updateSubscription(
+              subscription.id,
+              subscription.customer.toString()
+            );
+            break;
+
           case "checkout.session.completed":
             const checkoutSession = event.data
               .object as Stripe.Checkout.Session;
-
             await saveSubscription(
               checkoutSession.subscription.toString(), // we parse to string to assure ts it will be always a string and not the stripe obj
               checkoutSession.customer.toString()
             );
             break;
+
           default:
             throw new Error("Unhandled event.");
         }
