@@ -1,4 +1,4 @@
-import { GetStaticProps } from "next";
+import { GetStaticPaths, GetStaticProps } from "next";
 import { RichText } from "prismic-dom";
 import { getPrismiClient } from "../../../services/prismic";
 import Head from "next/head";
@@ -54,10 +54,16 @@ export default function Post({ post }: PostPreviewProps) {
   );
 }
 
-export const getStaticPaths = () => {
+// this function return the paths that will be generated during the build
+// It's mandatory pass it because we have [params] on our path
+export const getStaticPaths: GetStaticPaths = async () => {
   return {
     paths: [],
-    fallback: "blocking",
+    fallback: "blocking", // can be a boolean
+    // Fallback - if the content is not loaded by static build
+    // true - fetch the page request on the browser
+    // false  - return a 404
+    // blocking - fetch the page request on the server and block the browser until it resolves
   };
 };
 
@@ -84,5 +90,6 @@ export const getStaticProps: GetStaticProps = async ({ params }) => {
 
   return {
     props: { post },
+    revalidate: 60 * 30,
   };
 };
