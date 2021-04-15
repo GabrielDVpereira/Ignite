@@ -1,4 +1,6 @@
 // loaded once
+// good to import fonts and things that need to be loaded once
+// has to be a class because of next limitation to function component, just in this case
 import Document, { Html, Head, Main, NextScript } from "next/document";
 
 export default class MyDocument extends Document {

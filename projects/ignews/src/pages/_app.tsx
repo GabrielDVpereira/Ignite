@@ -1,4 +1,5 @@
 // loaded on every page change
+// Component that access every page through Component
 import { AppProps } from "next/app";
 import "../styles/global.scss";
 import { Header } from "../components/Header";
