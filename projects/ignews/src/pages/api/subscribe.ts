@@ -3,6 +3,7 @@ import { stripe } from "../../services/stripe";
 import { getSession } from "next-auth/client";
 import { fauna } from "../../services/fauna";
 import { query as q } from "faunadb";
+import { Stripe } from "stripe";
 
 type User = {
   ref: {
@@ -37,21 +38,11 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
     }
 
     try {
-      const strinpeCheckoutSession = await stripe.checkout.sessions.create({
+      const customerInfo = {
         customer: customerId,
-        payment_method_types: ["card"],
-        billing_address_collection: "required",
-        line_items: [
-          {
-            price: req.body.priceId,
-            quantity: 1,
-          },
-        ],
-        mode: "subscription",
-        allow_promotion_codes: true,
-        success_url: process.env.STRIPE_SUCCESS_URL,
-        cancel_url: process.env.STRIPE_CANCEL_URL,
-      });
+        price: req.body.priceId,
+      };
+      const strinpeCheckoutSession = await createNewStripeSession(customerInfo);
 
       return res.status(200).json({ sessionId: strinpeCheckoutSession.id });
     } catch (err) {
@@ -61,4 +52,29 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
     res.setHeader("Allow", "POST");
     res.status(405).end("Method not allowed");
   }
+};
+
+interface createNewStripeSessionProps {
+  customer: string;
+  price: string;
+}
+const createNewStripeSession = async ({
+  customer,
+  price,
+}: createNewStripeSessionProps) => {
+  return stripe.checkout.sessions.create({
+    customer,
+    payment_method_types: ["card"],
+    billing_address_collection: "required",
+    line_items: [
+      {
+        price,
+        quantity: 1,
+      },
+    ],
+    mode: "subscription",
+    allow_promotion_codes: true,
+    success_url: process.env.STRIPE_SUCCESS_URL,
+    cancel_url: process.env.STRIPE_CANCEL_URL,
+  });
 };
