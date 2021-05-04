@@ -1,5 +1,39 @@
-export default function Home(){
+import {Flex , Button, Stack} from '@chakra-ui/react'; 
+import {Input} from '../components/Form/Input'; 
+
+export default function SIgnIn(){
   return(
-    <h1>Dashgo</h1>
+    <Flex 
+      w="100vw" 
+      h="100vh" 
+      align="center" 
+      justify="center">
+
+      <Flex
+        as="form"
+        width="100%"
+        maxWidth={360}
+        bg="gray.800"
+        p="8" // 2rem 
+        borderRadius={8}
+        flexDirection="column"
+      >
+        <Stack spacing="4" // stack is a component to set spacement between components
+        > 
+          <Input name="email" label="E-mail" type="email"/>
+          <Input name="password" label="Senha" type="password"/>
+        </Stack>
+
+        <Button 
+            type="submit"
+            mt="6"
+            colorScheme="pink"
+            size="lg"
+          >
+            Entrar 
+        </Button>
+
+      </Flex>
+    </Flex>
   )
 }
