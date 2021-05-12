@@ -19,7 +19,6 @@ export function Profile({showProfileData = true}: profileProps) {
         }
         
       </Box>
-
       <Avatar size="md" name="Gabriel Davi" />
     </Flex>
   );
