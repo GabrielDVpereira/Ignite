@@ -12,7 +12,7 @@ export function Sidebar() {
   const {isOpen, onClose} = useSidebarDrawer()
   if(isDrawerSidebar){
     return(
-      <Drawer isOpen={isOpen} placement="left" onClose={() => {}}>
+      <Drawer isOpen={isOpen} placement="left" onClose={onClose}>
         <DrawerOverlay>
           <DrawerContent bgColor="gray.800" p="4">
             <DrawerCloseButton mt="6" onClick={onClose}/>
@@ -25,6 +25,7 @@ export function Sidebar() {
       </Drawer>
     )
   }
+
   return (
     <Box as="aside" w="64" mr="8">
       <SidebarNav />
