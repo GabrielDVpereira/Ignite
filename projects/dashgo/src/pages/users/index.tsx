@@ -12,6 +12,7 @@ import {
   Tbody,
   Td,
   Text,
+  useBreakpointValue,
 } from "@chakra-ui/react";
 import { RiAddLine, RiPencilFill } from "react-icons/ri";
 import { Header } from "../../components/Header";
@@ -19,6 +20,12 @@ import { Sidebar } from "../../components/Sidebar";
 import { Pagination } from "../../components/Pagination";
 
 export default function UserList() {
+
+  const isWideVersion = useBreakpointValue({
+    base: false, 
+    lg: true
+  }); 
+  
   return (
     <Box>
       <Header />
@@ -45,19 +52,19 @@ export default function UserList() {
           <Table colorScheme="whiteAlpha">
             <Thead>
               <Tr>
-                <Th ph="6" color="gray.300" width="8">
+                <Th ph={["4", "4", "6" ]}color="gray.300" width="8">
                   <Checkbox colorScheme="pink" />
                 </Th>
 
                 <Th>Usuário</Th>
-                <Th>Data de cadastro</Th>
-                <Th></Th>
+                {isWideVersion && <Th>Data de cadastro</Th>}
+                {isWideVersion && <Th></Th>}
               </Tr>
             </Thead>
             <Tbody>
               {[1, 2, 3, 4, 5, 6].map((_) => (
                 <Tr>
-                  <Td px="6">
+                  <Td px={["4", "4", "6" ]}>
                     <Checkbox colorScheme="pink" />
                   </Td>
                   <Td>
@@ -68,8 +75,8 @@ export default function UserList() {
                       </Text>
                     </Box>
                   </Td>
-                  <Td>21/02/2021</Td>
-                  <Td>
+                  {isWideVersion && <Td>21/02/2021</Td>}
+                  {isWideVersion && <Td>
                     <Button
                       as="a"
                       size="sm"
@@ -79,7 +86,7 @@ export default function UserList() {
                     >
                       Editar
                     </Button>
-                  </Td>
+                  </Td>}
                 </Tr>
               ))}
             </Tbody>
