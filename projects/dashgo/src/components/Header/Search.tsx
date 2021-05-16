@@ -1,6 +1,10 @@
 import { Flex, Input, Icon } from "@chakra-ui/react";
 import { RiSearch2Line } from "react-icons/ri";
 
+
+// controlled compontens - when you use a state to store the value of an input and grab it's change with an  onChange funciton
+// uncontrolled components - when you use refs to grab the value of an form
+
 export function Search() {
   return (
     <Flex
