@@ -1,3 +1,4 @@
+import {useEffect} from 'react'
 import {
   Box,
   Flex,
@@ -22,6 +23,12 @@ import Link from 'next/link';
 
 
 export default function UserList() {
+
+  useEffect(() => {
+    fetch('http://localhost:3000/api/users')
+    .then(response => response.json())
+    .then(data => console.log("data", data))
+  },[])
 
   const isWideVersion = useBreakpointValue({
     base: false, 
@@ -65,8 +72,8 @@ export default function UserList() {
               </Tr>
             </Thead>
             <Tbody>
-              {[1, 2, 3, 4, 5, 6].map((_) => (
-                <Tr>
+              {[1, 2, 3, 4, 5, 6].map((_, index) => (
+                <Tr key={Math.random()}>
                   <Td px={["4", "4", "6" ]}>
                     <Checkbox colorScheme="pink" />
                   </Td>
