@@ -2,7 +2,8 @@ import { Flex , Button, Stack } from '@chakra-ui/react';
 import { Input } from '../components/Form/Input'; 
 import { useForm, SubmitHandler } from 'react-hook-form'; 
 import * as yup from 'yup'; 
-import { yupResolver } from '@hookform/resolvers/yup'
+import { yupResolver } from '@hookform/resolvers/yup'; 
+
 
 
 interface SignInFormData { 

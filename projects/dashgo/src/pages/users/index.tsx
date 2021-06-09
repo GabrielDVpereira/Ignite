@@ -43,6 +43,8 @@ export default function UserList() {
       }
     })
     return users
+  },{
+    staleTime: 1000 * 5  // define a time for our data to be considered "stale", then the reactQuery will fetch the new info again. If not passed, every data will be considered stale as soon as it's fetched and then the reactQuery will make a request on every focus 
   })
 
   const isWideVersion = useBreakpointValue({

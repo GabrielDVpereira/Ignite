@@ -3,7 +3,8 @@ import { ChakraProvider } from '@chakra-ui/react';
 import { theme } from '../styles/theme';
 import { SidebarDrawerProvider } from '../contexts/SidebarDrawerContext';
 import { makeServer } from '../services/mirage';
-import {QueryClientProvider, QueryClient} from 'react-query'
+import { QueryClientProvider, QueryClient } from 'react-query'
+import { ReactQueryDevtools } from 'react-query/devtools'
 
 if(process.env.NODE_ENV === 'development'){
   makeServer() // setting up a faker server if enviroment is dev
@@ -19,6 +20,8 @@ function MyApp({ Component, pageProps }: AppProps) {
           <Component {...pageProps} />
         </SidebarDrawerProvider> 
      </ChakraProvider>
+
+     <ReactQueryDevtools />
     </QueryClientProvider>
   )
 }
