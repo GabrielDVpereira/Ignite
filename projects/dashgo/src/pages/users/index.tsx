@@ -1,4 +1,3 @@
-import {useEffect} from 'react'
 import {
   Box,
   Flex,
@@ -19,22 +18,98 @@ import { RiAddLine, RiPencilFill } from "react-icons/ri";
 import { Header } from "../../components/Header";
 import { Sidebar } from "../../components/Sidebar";
 import { Pagination } from "../../components/Pagination";
-import Link from 'next/link'; 
+import { useQuery } from 'react-query'
+import Link from 'next/link';
+import { Loading } from "../../components/Loading";
 
 
 export default function UserList() {
+  // useQuery generate a cached query, using a strategy called stale while revalidate, where the browser will still make an http request but show the latest data while fetching
+  // useQuery has also an feature called revalidate on focus, wich means that whenever the user access the browser, the http request will be performed
+  const { data, isLoading, error } = useQuery('users', async () => { // we set a name for the query becase that's the name of the caching later, then a function that will return the data that will be stored
+    const response = await fetch('http://localhost:3000/api/users');
+    const data = await response.json();
 
-  useEffect(() => {
-    fetch('http://localhost:3000/api/users')
-    .then(response => response.json())
-    .then(data => console.log("data", data))
-  },[])
+    const users = data.users.map(user => {
+      return {
+        id: user.id,
+        name: user.name, 
+        email: user.email, 
+        createdAt: new Date(user.createdAt).toLocaleDateString('pt-BR', {
+          day: '2-digit', 
+          month: 'long', 
+          year: 'numeric'
+        })
+      }
+    })
+    return users
+  })
 
   const isWideVersion = useBreakpointValue({
-    base: false, 
+    base: false,
     lg: true
-  }); 
-  
+  });
+
+  const renderLoading = () => (
+    <Loading />
+  )
+
+  const renderUserTableOrErrorMessage = () => {
+
+    if (error) {
+      return (
+        <Flex justify="center">
+          <Text>Erro ao obter dados do usuário</Text>
+        </Flex>
+      )
+    }
+
+    return (
+      <Table colorScheme="whiteAlpha">
+        <Thead>
+          <Tr>
+            <Th ph={["4", "4", "6"]} color="gray.300" width="8">
+              <Checkbox colorScheme="pink" />
+            </Th>
+
+            <Th>Usuário</Th>
+            {isWideVersion && <Th>Data de cadastro</Th>}
+            {isWideVersion && <Th></Th>}
+          </Tr>
+        </Thead>
+        <Tbody>
+          {data.map((user, index) => (
+            <Tr key={Math.random()}>
+              <Td px={["4", "4", "6"]}>
+                <Checkbox colorScheme="pink" />
+              </Td>
+              <Td>
+                <Box>
+                  <Text fontWeight="bold"> {user.name} </Text>
+                  <Text fontSize="sm" color="gray.300">
+                    {user.email}
+                    </Text>
+                </Box>
+              </Td>
+              {isWideVersion && <Td>{user.createdAt}</Td>}
+              {isWideVersion && <Td>
+                <Button
+                  as="a"
+                  size="sm"
+                  fontSize="sm"
+                  colorScheme="purple"
+                  leftIcon={<Icon as={RiPencilFill} fontSize="16" />}
+                >
+                  Editar
+            </Button>
+              </Td>}
+            </Tr>
+          ))}
+        </Tbody>
+      </Table>
+    )
+  }
+
   return (
     <Box>
       <Header />
@@ -59,48 +134,9 @@ export default function UserList() {
             </Link>
           </Flex>
 
-          <Table colorScheme="whiteAlpha">
-            <Thead>
-              <Tr>
-                <Th ph={["4", "4", "6" ]}color="gray.300" width="8">
-                  <Checkbox colorScheme="pink" />
-                </Th>
+          {isLoading ? renderLoading() :
+            renderUserTableOrErrorMessage()}
 
-                <Th>Usuário</Th>
-                {isWideVersion && <Th>Data de cadastro</Th>}
-                {isWideVersion && <Th></Th>}
-              </Tr>
-            </Thead>
-            <Tbody>
-              {[1, 2, 3, 4, 5, 6].map((_, index) => (
-                <Tr key={Math.random()}>
-                  <Td px={["4", "4", "6" ]}>
-                    <Checkbox colorScheme="pink" />
-                  </Td>
-                  <Td>
-                    <Box>
-                      <Text fontWeight="bold"> Gabriel Davi </Text>
-                      <Text fontSize="sm" color="gray.300">
-                        gdavi.gd@gmail.com
-                      </Text>
-                    </Box>
-                  </Td>
-                  {isWideVersion && <Td>21/02/2021</Td>}
-                  {isWideVersion && <Td>
-                    <Button
-                      as="a"
-                      size="sm"
-                      fontSize="sm"
-                      colorScheme="purple"
-                      leftIcon={<Icon as={RiPencilFill} fontSize="16" />}
-                    >
-                      Editar
-                    </Button>
-                  </Td>}
-                </Tr>
-              ))}
-            </Tbody>
-          </Table>
           <Pagination />
         </Box>
       </Flex>
