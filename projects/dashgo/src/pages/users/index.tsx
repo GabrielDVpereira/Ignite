@@ -13,6 +13,7 @@ import {
   Td,
   Text,
   useBreakpointValue,
+  Spinner
 } from "@chakra-ui/react";
 import { RiAddLine, RiPencilFill } from "react-icons/ri";
 import { Header } from "../../components/Header";
@@ -26,7 +27,7 @@ import { Loading } from "../../components/Loading";
 export default function UserList() {
   // useQuery generate a cached query, using a strategy called stale while revalidate, where the browser will still make an http request but show the latest data while fetching
   // useQuery has also an feature called revalidate on focus, wich means that whenever the user access the browser, the http request will be performed
-  const { data, isLoading, error } = useQuery('users', async () => { // we set a name for the query becase that's the name of the caching later, then a function that will return the data that will be stored
+  const { data, isLoading, error, isFetching } = useQuery('users', async () => { // we set a name for the query becase that's the name of the caching later, then a function that will return the data that will be stored
     const response = await fetch('http://localhost:3000/api/users');
     const data = await response.json();
 
@@ -42,7 +43,7 @@ export default function UserList() {
         })
       }
     })
-    return users
+    return users // data that will be saved into our code
   },{
     staleTime: 1000 * 5  // define a time for our data to be considered "stale", then the reactQuery will fetch the new info again. If not passed, every data will be considered stale as soon as it's fetched and then the reactQuery will make a request on every focus 
   })
@@ -122,6 +123,7 @@ export default function UserList() {
           <Flex mb="8" justify="space-between" align="center">
             <Heading size="lg" fontWeight="normal">
               Usuários
+              {!isLoading && isFetching && (<Spinner size="sm" color="gray.500" ml="4"/>)  /* when loading is true, fetching is true, but we just want the spinner when fetching*/ }
             </Heading>
             <Link href="/users/create" passHref>
               <Button
