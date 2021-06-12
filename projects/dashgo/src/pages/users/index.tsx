@@ -121,7 +121,11 @@ export default function UserList() {
           {isLoading ? renderLoading() :
             renderUserTableOrErrorMessage()}
 
-          <Pagination />
+          <Pagination 
+            totalCountOfRegisters={200}
+            currentPage={2}
+            onPageChange={()=>{}}
+          />
         </Box>
       </Flex>
     </Box>
