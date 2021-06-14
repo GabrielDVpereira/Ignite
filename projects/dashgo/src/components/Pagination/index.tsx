@@ -49,22 +49,22 @@ export function Pagination({
 
         {currentPage > (1 + siblignsCount) && (
           <>
-            <PaginationItem pageNumber={1} />
+            <PaginationItem pageNumber={1} onPageChange={onPageChange} />
             {currentPage > (2 + siblignsCount) && 
               (<Text color="gray.300" width="8" textAlign="center">...</Text>)}
           </>
         )}
 
-        {previousPages.length > 0 && previousPages.map(page => <PaginationItem key={page} pageNumber={page} />)}
-        <PaginationItem pageNumber={currentPage} isCurrent />
-        {nextPages.length > 0 && nextPages.map(page => <PaginationItem key={page} pageNumber={page} />)}
+        {previousPages.length > 0 && previousPages.map(page => <PaginationItem key={page} pageNumber={page} onPageChange={onPageChange} />)}
+        <PaginationItem pageNumber={currentPage} isCurrent   onPageChange={onPageChange} />
+        {nextPages.length > 0 && nextPages.map(page => <PaginationItem key={page} pageNumber={page}  onPageChange={onPageChange}  />)}
 
 
         {(1 + siblignsCount) < lastPage && (
           <>
             {(currentPage + 1 + siblignsCount) < lastPage && 
               (<Text color="gray.300" width="8" textAlign="center">...</Text>)}
-            <PaginationItem pageNumber={lastPage} />
+            <PaginationItem pageNumber={lastPage}  onPageChange={onPageChange}  />
           </>
         )}
       </Stack>

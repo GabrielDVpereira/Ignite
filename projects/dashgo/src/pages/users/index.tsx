@@ -22,11 +22,13 @@ import { Pagination } from "../../components/Pagination";
 import Link from 'next/link';
 import { Loading } from "../../components/Loading";
 import { useUsers } from "../../services/hooks/useUSers";
+import { useState } from 'react'
 
 
 export default function UserList() {
+  const [page, setPage] = useState(1); 
 
-  const { data, isLoading, error, isFetching } = useUsers()
+  const { data, isLoading, error, isFetching } = useUsers(page); 
 
   const isWideVersion = useBreakpointValue({
     base: false,
@@ -61,7 +63,7 @@ export default function UserList() {
           </Tr>
         </Thead>
         <Tbody>
-          {data.map((user, index) => (
+          {data.users.map((user, index) => (
             <Tr key={Math.random()}>
               <Td px={["4", "4", "6"]}>
                 <Checkbox colorScheme="pink" />
@@ -122,9 +124,9 @@ export default function UserList() {
             renderUserTableOrErrorMessage()}
 
           <Pagination 
-            totalCountOfRegisters={200}
-            currentPage={2}
-            onPageChange={()=>{}}
+            totalCountOfRegisters={data?.totalCount}
+            currentPage={page}
+            onPageChange={setPage}
           />
         </Box>
       </Flex>
