@@ -14,7 +14,11 @@ import { Sidebar } from "../../components/Sidebar";
 import Link from 'next/link';
 import { SubmitHandler, useForm } from 'react-hook-form';
 import * as yup from 'yup'; 
-import { yupResolver } from '@hookform/resolvers/yup' 
+import { yupResolver } from '@hookform/resolvers/yup'; 
+import { useMutation } from 'react-query'
+import { api } from "../../services/api";
+import { queryClient } from "../../services/queryClient";
+import { useRouter } from "next/dist/client/router";
 
 
 interface UserCreationInfo {
@@ -33,12 +37,28 @@ const CreateUserSchema = yup.object().shape({
 })
 
 export default function CreateUser() {
+  const createUser = useMutation(async (user:UserCreationInfo) =>{
+    const response = await api.post('users', {
+      user: {
+        ...user, 
+        created_at: new Date()
+      }
+    }); 
+
+    return response.data.user; 
+  }, {
+    onSuccess: () => {
+      queryClient.invalidateQueries('users') // since we're creating a new user, we have to invalidade the users cache (even the user <number>)
+    }
+  }); 
+  const router = useRouter()
+
   const {register, formState, handleSubmit} =  useForm({resolver: yupResolver(CreateUserSchema) }); 
   const { errors } = formState
 
    const onSubmit: SubmitHandler<UserCreationInfo> = async (values) => {
-      await new Promise(resolve => setTimeout(resolve, 2000)); 
-      console.log(values)
+      await createUser.mutateAsync(values); 
+      router.push('/users')
    }
 
   return (
