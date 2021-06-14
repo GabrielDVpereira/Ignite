@@ -52,6 +52,7 @@ export function makeServer(){
         )
 
       }); 
+      this.get('users/:id')
       this.post('/users'); 
 
       this.namespace = ""; // avoiding conflict with next api 

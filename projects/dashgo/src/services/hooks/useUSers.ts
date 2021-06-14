@@ -18,7 +18,6 @@ export const getUsers =  async (page: number): Promise<GetUsersResponse> => {
     const { data, headers } = await api.get('/users',{
       params: { page }
     }); 
-    console.log(data)
     const totalCount = Number(headers['x-total-count'])
 
     const users = data.users.map(user => {

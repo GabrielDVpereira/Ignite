@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import {
   Box,
   Flex,
@@ -13,17 +14,20 @@ import {
   Td,
   Text,
   useBreakpointValue,
-  Spinner
+  Spinner, 
+  Link
 } from "@chakra-ui/react";
+import NextLink from 'next/link';
+
+import { queryClient } from '../../services/queryClient';
+
 import { RiAddLine, RiPencilFill } from "react-icons/ri";
 import { Header } from "../../components/Header";
 import { Sidebar } from "../../components/Sidebar";
 import { Pagination } from "../../components/Pagination";
-import Link from 'next/link';
 import { Loading } from "../../components/Loading";
 import { useUsers } from "../../services/hooks/useUSers";
-import { useState } from 'react'
-
+import { api } from '../../services/api';
 
 export default function UserList() {
   const [page, setPage] = useState(1); 
@@ -34,6 +38,13 @@ export default function UserList() {
     base: false,
     lg: true
   });
+
+  async function handlePrefetchUser(userId: number){
+    await queryClient.prefetchQuery(['user', userId], async () => {
+      const response = await api.get(`users/${userId}`)
+      console.log(response.data)
+    },{ staleTime: 1000* 60*10 })
+  }
 
   const renderLoading = () => (
     <Loading />
@@ -63,14 +74,16 @@ export default function UserList() {
           </Tr>
         </Thead>
         <Tbody>
-          {data.users.map((user, index) => (
+          {data?.users?.map((user, index) => (
             <Tr key={Math.random()}>
               <Td px={["4", "4", "6"]}>
                 <Checkbox colorScheme="pink" />
               </Td>
               <Td>
                 <Box>
-                  <Text fontWeight="bold"> {user.name} </Text>
+                  <Link color="purple.500" onMouseEnter={() => handlePrefetchUser(Number(user.id))}>
+                    <Text fontWeight="bold"> {user.name} </Text>
+                  </Link>
                   <Text fontSize="sm" color="gray.300">
                     {user.email}
                     </Text>
@@ -107,7 +120,7 @@ export default function UserList() {
               Usuários
               {!isLoading && isFetching && (<Spinner size="sm" color="gray.500" ml="4"/>)  /* when loading is true, fetching is true, but we just want the spinner when fetching*/ }
             </Heading>
-            <Link href="/users/create" passHref>
+            <NextLink href="/users/create" passHref>
               <Button
                 as="a"
                 size="sm"
@@ -117,7 +130,7 @@ export default function UserList() {
               >
                 Criar Novo
               </Button>
-            </Link>
+            </NextLink>
           </Flex>
 
           {isLoading ? renderLoading() :
