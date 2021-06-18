@@ -1,5 +1,5 @@
-import { createContext, ReactNode, useCallback, useContext, useState } from "react";
-import { setCookie } from 'nookies'
+import { createContext, ReactNode, useCallback, useContext, useState, useEffect} from "react";
+import { setCookie, parseCookies } from 'nookies'
 import { api } from "../services/api";
 import Router from 'next/router'; 
 
@@ -28,6 +28,16 @@ interface AuthProviderProps {
 
 export function AuthProvider({ children } : AuthProviderProps) {
   const [user, setUser ] = useState<User>({} as User ); 
+
+  useEffect(() => {
+    const { 'nextauth.token': token } = parseCookies(); 
+    if(token){
+      api.get('/me').then(response => {
+        const {email, permissions, roles} = response.data; 
+        setUser({ email, permissions, roles })
+      })
+    }
+  },[])
 
   const signIn = useCallback(async (credentials: SignInCredentials ) => {
     try {
