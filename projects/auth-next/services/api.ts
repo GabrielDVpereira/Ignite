@@ -9,7 +9,9 @@ export const api = axios.create({
 api.interceptors.request.use(async (config) => {
   const cookies = parseCookies();
   let token = cookies['nextauth.token'];
-  config.headers.authorization = `Bearer ${token}`
+  if (token) {
+    config.headers.authorization = `Bearer ${token}`
+  }
   return config
 }, (err) => {
   console.log(err)
@@ -20,18 +22,21 @@ api.interceptors.request.use(async (config) => {
 api.interceptors.response.use(response => {
   return response;
 }, error => {
-  const { config, response: { status } } = error;
+  const { config, response: { status, data } } = error;
   const originalRequest = config;
 
-  if (status === 401) {
+  if (status === 401 && data.code === 'token.expired') {
     // this lets only one failed request ask for a new token
     if (!isRefreshingToken) {
       isRefreshingToken = true;
-      getNewTokens().then(({ token, refreshToken }) => {
-        isRefreshingToken = false;
-        saveTokensInCookies({ token, refreshToken });
-        onRrefreshed(token)
-      })
+      getNewTokens()
+        .then(({ token, refreshToken }) => {
+          isRefreshingToken = false;
+          saveTokensInCookies({ token, refreshToken });
+          onRrefreshed(token)
+        }).catch(() => {
+          return Promise.reject(error);
+        })
     }
 
     const retryOrigReq = new Promise((resolve) => {
