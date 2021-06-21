@@ -1,57 +1,69 @@
-import axios from 'axios';
+import axios, { AxiosInstance } from 'axios';
+import { GetServerSidePropsContext } from 'next';
 import { parseCookies, setCookie } from 'nookies';
+import { logOut } from '../context/AuthContext';
 
-export const api = axios.create({
-  baseURL: 'http://localhost:3333',
-});
-
-
-api.interceptors.request.use(async (config) => {
-  const cookies = parseCookies();
-  let token = cookies['nextauth.token'];
-  if (token) {
-    config.headers.authorization = `Bearer ${token}`
-  }
-  return config
-}, (err) => {
-  console.log(err)
-});
+export const setUpHttp = (ctx?: GetServerSidePropsContext): AxiosInstance => {
+  const api = axios.create({
+    baseURL: 'http://localhost:3333',
+  });
 
 
-
-api.interceptors.response.use(response => {
-  return response;
-}, error => {
-  const { config, response: { status, data } } = error;
-  const originalRequest = config;
-
-  if (status === 401 && data.code === 'token.expired') {
-    // this lets only one failed request ask for a new token
-    if (!isRefreshingToken) {
-      isRefreshingToken = true;
-      getNewTokens()
-        .then(({ token, refreshToken }) => {
-          isRefreshingToken = false;
-          saveTokensInCookies({ token, refreshToken });
-          onRrefreshed(token)
-        }).catch(() => {
-          return Promise.reject(error);
-        })
+  api.interceptors.request.use(async (config) => {
+    const cookies = parseCookies(ctx);
+    let token = cookies['nextauth.token'];
+    if (token) {
+      config.headers.authorization = `Bearer ${token}`
     }
+    return config
+  }, (err) => {
+    console.log(err)
+  });
 
-    const retryOrigReq = new Promise((resolve) => {
-      subscribeTokenRefresh((token: string) => {
-        originalRequest.headers.authorization = `Bearer ${token}`;
-        resolve(axios(originalRequest));
+
+
+  api.interceptors.response.use(response => {
+    return response;
+  }, error => {
+    const { config, response: { status, data } } = error;
+    const originalRequest = config;
+
+    if (status === 401 && data.code === 'token.expired') {
+      // this lets only one failed request ask for a new token
+      if (!isRefreshingToken) {
+        isRefreshingToken = true;
+        getNewTokens(api, ctx)
+          .then(({ token, refreshToken }) => {
+            isRefreshingToken = false;
+            saveTokensInCookies({ token, refreshToken }, ctx);
+            onRrefreshed(token)
+          }).catch(() => {
+            if (process.browser) {
+              logOut()
+            }
+            return Promise.reject(error);
+          })
+      }
+
+      const retryOrigReq = new Promise((resolve) => {
+        subscribeTokenRefresh((token: string) => {
+          originalRequest.headers.authorization = `Bearer ${token}`;
+          resolve(axios(originalRequest));
+        });
       });
-    });
 
-    return retryOrigReq;
+      return retryOrigReq;
 
-  } else {
-    return Promise.reject(error);
-  }
-});
+    } else {
+      if (process.browser) {
+        logOut()
+      }
+      return Promise.reject(error);
+    }
+  });
+
+  return api;
+}
 
 type requestCallback = (token: string) => void;
 
@@ -70,12 +82,13 @@ function onRrefreshed(token: string) {
 }
 
 
-const getNewTokens = async (): Promise<AuthTokens> => {
-  const cookies = parseCookies();
+const getNewTokens = async (api: AxiosInstance, ctx?: GetServerSidePropsContext): Promise<AuthTokens> => {
+  const cookies = parseCookies(ctx);
   const refreshToken = cookies['nextauth.refreshToken']
-  const { data } = await api.post('/refresh', { refreshToken })
+  const { data } = await api.post('/refresh', { refreshToken });
   const { token: newToken, refreshToken: newRefreshToken } = data;
   return { token: newToken, refreshToken: newRefreshToken };
+
 }
 
 interface AuthTokens {
@@ -83,12 +96,12 @@ interface AuthTokens {
   refreshToken: string;
 }
 
-const saveTokensInCookies = ({ token, refreshToken }: AuthTokens) => {
-  setCookie(undefined, 'nextauth.token', token, {
+const saveTokensInCookies = ({ token, refreshToken }: AuthTokens, ctx?: GetServerSidePropsContext) => {
+  setCookie(ctx, 'nextauth.token', token, {
     maxAge: 60 * 60 * 24 * 30, // 1 month
     path: '/' // paths that can access the cookie
   });
-  setCookie(undefined, 'nextauth.refreshToken', refreshToken, {
+  setCookie(ctx, 'nextauth.refreshToken', refreshToken, {
     maxAge: 60 * 60 * 24 * 30, // 1 month
     path: '/' // paths that can access the cookie
   });

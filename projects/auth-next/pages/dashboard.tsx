@@ -1,18 +1,12 @@
+import { destroyCookie } from "nookies";
 import { useEffect } from "react";
 import { useAuth } from "../context/AuthContext"
-import { api } from "../services/api";
+import { setUpHttp } from "../services/api";
 import { withSSRAuth } from "../utils/withSSRAuth";
 
 export default function Dashboard() {
 
-  useEffect(() => {
-    api.get('/me').then(response => {
-      const { email, permissions, roles } = response.data;
-      console.log(response)
-    }).catch(() => {
-      console.log("cdkcmlkcmdkl")
-    })
-  }, [])
+
 
   const { user } = useAuth()
   return (
@@ -21,6 +15,11 @@ export default function Dashboard() {
 }
 
 export const getServerSideProps = withSSRAuth(async (ctx) => {
+  const httpClient = setUpHttp(ctx);
+
+  const response = await httpClient.get('/me')
+  const { email, permissions, roles } = response.data;
+
   return {
     props: {}
   }

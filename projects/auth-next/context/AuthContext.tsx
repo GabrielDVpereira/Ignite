@@ -1,6 +1,6 @@
 import { createContext, ReactNode, useCallback, useContext, useState, useEffect } from "react";
 import { setCookie, parseCookies, destroyCookie } from 'nookies'
-import { api } from "../services/api";
+import { httpClient } from "../services/httpClient";
 import Router from 'next/router';
 
 type SignInCredentials = {
@@ -26,27 +26,30 @@ interface AuthProviderProps {
   children: ReactNode
 }
 
+export const logOut = () => {
+  destroyCookie(undefined, 'nextauth.token')
+  destroyCookie(undefined, 'nextauth.refreshToken')
+  Router.push('/')
+}
+
 export function AuthProvider({ children }: AuthProviderProps) {
   const [user, setUser] = useState<User>({} as User);
 
   useEffect(() => {
     const { 'nextauth.token': token } = parseCookies();
     if (token) {
-      api.get('/me').then(response => {
+      httpClient.get('/me').then(response => {
         const { email, permissions, roles } = response.data;
         setUser({ email, permissions, roles })
       }).catch(() => {
-        console.log('cldskmckldsmckldmsklc')
-        destroyCookie(undefined, 'nextauth.token')
-        destroyCookie(undefined, 'nextauth.refreshToken')
-        Router.push('/')
+        logOut()
       })
     }
   }, [])
 
   const signIn = useCallback(async (credentials: SignInCredentials) => {
     try {
-      const response = await api.post('/sessions', credentials);
+      const response = await httpClient.post('/sessions', credentials);
       const { permissions, roles, token, refreshToken } = response.data;
       const { email } = credentials;
 
